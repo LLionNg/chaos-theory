@@ -40,9 +40,9 @@ class LorenzAttractorScene(ThreeDScene):
             x_range=[-25, 25, 25],
             y_range=[-35, 35, 35],
             z_range=[0, 50, 25],
-            x_length=8,
-            y_length=8,
-            z_length=6,
+            x_length=10,
+            y_length=10,
+            z_length=7,
             axis_config={
                 "stroke_color": GREY_D,
                 "stroke_width": 1,
@@ -50,7 +50,8 @@ class LorenzAttractorScene(ThreeDScene):
             }
         )
 
-        self.set_camera_orientation(phi=70 * DEGREES, theta=-45 * DEGREES, distance=10)
+        # Camera pulled far back to ensure entire butterfly fits in frame
+        self.set_camera_orientation(phi=70 * DEGREES, theta=-60 * DEGREES, distance=20)
         self.add(axes)
 
         # Generate Lorenz trajectory with longer time span for full butterfly
@@ -92,11 +93,11 @@ class LorenzAttractorScene(ThreeDScene):
         )
         self.wait()
 
-        # Smooth camera rotation to showcase the butterfly
-        self.move_camera(phi=60 * DEGREES, theta=-90 * DEGREES, run_time=4)
-        self.wait()
-        self.move_camera(phi=80 * DEGREES, theta=-30 * DEGREES, run_time=4)
-        self.wait()
+        # Smooth camera rotation to showcase the butterfly from multiple angles
+        self.move_camera(phi=65 * DEGREES, theta=-120 * DEGREES, run_time=5)
+        self.wait(2)
+        self.move_camera(phi=85 * DEGREES, theta=0 * DEGREES, run_time=5)
+        self.wait(2)
 
         # Final slow rotation
         self.begin_ambient_camera_rotation(rate=0.1)
@@ -128,9 +129,9 @@ class ButterflyEffectScene(ThreeDScene):
             x_range=[-25, 25, 25],
             y_range=[-35, 35, 35],
             z_range=[0, 50, 25],
-            x_length=8,
-            y_length=8,
-            z_length=6,
+            x_length=10,
+            y_length=10,
+            z_length=7,
             axis_config={
                 "stroke_color": GREY_D,
                 "stroke_width": 1,
@@ -138,7 +139,8 @@ class ButterflyEffectScene(ThreeDScene):
             }
         )
 
-        self.set_camera_orientation(phi=70 * DEGREES, theta=-45 * DEGREES, distance=10)
+        # Camera pulled far back to see both complete trajectories
+        self.set_camera_orientation(phi=70 * DEGREES, theta=-60 * DEGREES, distance=20)
         self.add(axes)
 
         # Generate two trajectories with tiny difference
@@ -185,8 +187,8 @@ class ButterflyEffectScene(ThreeDScene):
         )
         self.wait()
 
-        # Smooth camera movements
-        self.move_camera(phi=60 * DEGREES, theta=-90 * DEGREES, run_time=4)
+        # Smooth camera movements to show divergence
+        self.move_camera(phi=65 * DEGREES, theta=-120 * DEGREES, run_time=5)
         self.wait(2)
 
         # Add text explaining divergence
@@ -223,9 +225,9 @@ class LorenzPhaseSpaceScene(ThreeDScene):
             x_range=[-25, 25, 25],
             y_range=[-35, 35, 35],
             z_range=[0, 50, 25],
-            x_length=8,
-            y_length=8,
-            z_length=6,
+            x_length=10,
+            y_length=10,
+            z_length=7,
             axis_config={
                 "stroke_color": GREY_D,
                 "stroke_width": 1,
@@ -233,7 +235,8 @@ class LorenzPhaseSpaceScene(ThreeDScene):
             }
         )
 
-        self.set_camera_orientation(phi=70 * DEGREES, theta=-45 * DEGREES, distance=10)
+        # Camera pulled far back for multiple trajectories
+        self.set_camera_orientation(phi=70 * DEGREES, theta=-60 * DEGREES, distance=20)
         self.add(axes)
 
         # Generate multiple trajectories from different initial conditions
@@ -264,11 +267,11 @@ class LorenzPhaseSpaceScene(ThreeDScene):
         self.play(*[Create(curve) for curve in all_curves], run_time=16, rate_func=linear)
         self.wait()
 
-        # Smooth camera movements
-        self.move_camera(phi=60 * DEGREES, theta=-90 * DEGREES, run_time=4)
+        # Smooth camera movements to showcase all trajectories
+        self.move_camera(phi=65 * DEGREES, theta=-120 * DEGREES, run_time=5)
         self.wait(2)
-        self.move_camera(phi=80 * DEGREES, theta=0 * DEGREES, run_time=4)
-        self.wait()
+        self.move_camera(phi=85 * DEGREES, theta=15 * DEGREES, run_time=5)
+        self.wait(2)
 
         # Final rotation
         self.begin_ambient_camera_rotation(rate=0.12)

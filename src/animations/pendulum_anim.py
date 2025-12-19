@@ -21,15 +21,18 @@ from src.utils.colors import BLUE, GREEN, YELLOW, RED, PURPLE, TEAL, ORANGE
 
 class DoublePendulumScene(Scene):
     """
-    Animate the double pendulum with trail showing chaotic motion.
+    Animate the double pendulum with glowing trail showing chaotic motion.
     """
 
     def construct(self):
-        # Title
-        title = Text("Double Pendulum Chaos", font_size=48)
-        self.play(Write(title))
+        # Title with smooth entrance
+        title = Text("Double Pendulum Chaos", font_size=48, weight=BOLD)
+        subtitle = Text("Deterministic yet unpredictable", font_size=28, color=ORANGE)
+        subtitle.next_to(title, DOWN)
+
+        self.play(FadeIn(title, shift=DOWN), FadeIn(subtitle, shift=DOWN))
         self.wait()
-        self.play(title.animate.scale(0.7).to_edge(UP))
+        self.play(FadeOut(subtitle), title.animate.scale(0.7).to_edge(UP))
 
         # Create pendulum
         pendulum = create_standard_double_pendulum()
@@ -45,17 +48,24 @@ class DoublePendulumScene(Scene):
         scale = 2.5
         origin = ORIGIN
 
-        # Create pendulum components
-        pivot = Dot(origin, radius=0.08, color=GRAY)
-        bob1 = Dot(radius=0.12, color=BLUE)
-        bob2 = Dot(radius=0.12, color=RED)
-        rod1 = Line(origin, bob1.get_center(), color=WHITE, stroke_width=3)
-        rod2 = Line(bob1.get_center(), bob2.get_center(), color=WHITE, stroke_width=3)
+        # Create pendulum components with enhanced visuals
+        pivot = Dot(origin, radius=0.08, color=GREY_B)
+        bob1 = Dot(radius=0.14, color=BLUE_C, fill_opacity=1)
+        bob2 = Dot(radius=0.14, color=RED_C, fill_opacity=1)
 
-        # Trail for second bob
-        trail = TracedPath(bob2.get_center, stroke_color=ORANGE, stroke_width=2, dissipating_time=3.0)
+        # Add glow to bobs
+        bob1_glow = Dot(radius=0.25, color=BLUE, fill_opacity=0.3)
+        bob2_glow = Dot(radius=0.25, color=RED, fill_opacity=0.3)
 
-        self.add(pivot, rod1, rod2, bob1, bob2, trail)
+        rod1 = Line(origin, bob1.get_center(), color=WHITE, stroke_width=4)
+        rod2 = Line(bob1.get_center(), bob2.get_center(), color=WHITE, stroke_width=4)
+
+        # Glowing trail for second bob
+        trail = TracedPath(bob2.get_center, stroke_color=ORANGE, stroke_width=3, dissipating_time=3.5)
+        trail_glow = TracedPath(bob2.get_center, stroke_color=YELLOW, stroke_width=6,
+                               stroke_opacity=0.3, dissipating_time=3.5)
+
+        self.add(pivot, rod1, rod2, bob1_glow, bob1, bob2_glow, bob2, trail_glow, trail)
 
         # Animate pendulum motion
         def update_pendulum(mob, alpha):
@@ -68,13 +78,15 @@ class DoublePendulumScene(Scene):
 
             bob1.move_to(pos1)
             bob2.move_to(pos2)
+            bob1_glow.move_to(pos1)
+            bob2_glow.move_to(pos2)
             rod1.put_start_and_end_on(origin, pos1)
             rod2.put_start_and_end_on(pos1, pos2)
 
         self.play(
             UpdateFromAlphaFunc(bob1, update_pendulum),
             run_time=20,
-            rate_func=linear
+            rate_func=smooth
         )
 
         self.wait(2)
@@ -83,14 +95,24 @@ class DoublePendulumScene(Scene):
 class DoublePendulumComparison(Scene):
     """
     Show multiple double pendulums with slightly different initial conditions.
-    Demonstrates extreme sensitivity to initial conditions.
+    Demonstrates extreme sensitivity to initial conditions with enhanced visuals.
     """
 
     def construct(self):
-        # Title
-        title = Text("Sensitive Dependence: Double Pendulum", font_size=40)
+        # Title with subtitle
+        title = Text("Sensitive Dependence", font_size=44, weight=BOLD)
+        subtitle = Text("Tiny differences, vastly different outcomes", font_size=26, color=YELLOW)
+        subtitle.next_to(title, DOWN)
+
+        title_group = VGroup(title, subtitle)
+        title_group.to_edge(UP)
+
+        self.play(FadeIn(title, shift=DOWN), FadeIn(subtitle, shift=DOWN))
+        self.wait()
+
+        # Keep title but fade subtitle
+        self.play(FadeOut(subtitle))
         title.to_edge(UP)
-        self.add(title)
 
         # Create pendulum
         pendulum = create_standard_double_pendulum()
@@ -109,7 +131,7 @@ class DoublePendulumComparison(Scene):
             traj = pendulum.solve(state, t_span=(0, 15), dt=0.02)
             trajectories.append(traj)
 
-        # Create visual elements for each pendulum
+        # Create visual elements for each pendulum with enhanced styling
         scale = 2.0
         origins = [
             LEFT * 5 + UP * 1,
@@ -120,26 +142,36 @@ class DoublePendulumComparison(Scene):
 
         pendulum_groups = []
         trails = []
+        trail_glows = []
 
         for i, (origin, color) in enumerate(zip(origins, colors)):
-            pivot = Dot(origin, radius=0.06, color=GRAY)
-            bob1 = Dot(radius=0.1, color=color)
-            bob2 = Dot(radius=0.1, color=color)
-            rod1 = Line(origin, bob1.get_center(), color=WHITE, stroke_width=2)
-            rod2 = Line(bob1.get_center(), bob2.get_center(), color=WHITE, stroke_width=2)
+            pivot = Dot(origin, radius=0.06, color=GREY_B)
+            bob1 = Dot(radius=0.11, color=color, fill_opacity=1)
+            bob2 = Dot(radius=0.11, color=color, fill_opacity=1)
+            rod1 = Line(origin, bob1.get_center(), color=WHITE, stroke_width=2.5)
+            rod2 = Line(bob1.get_center(), bob2.get_center(), color=WHITE, stroke_width=2.5)
 
+            # Enhanced trails with glow
             trail = TracedPath(
                 bob2.get_center,
                 stroke_color=color,
-                stroke_width=1.5,
-                dissipating_time=2.0
+                stroke_width=2,
+                dissipating_time=2.5
+            )
+            trail_glow = TracedPath(
+                bob2.get_center,
+                stroke_color=color,
+                stroke_width=4,
+                stroke_opacity=0.3,
+                dissipating_time=2.5
             )
 
             group = VGroup(pivot, rod1, rod2, bob1, bob2)
             pendulum_groups.append(group)
             trails.append(trail)
+            trail_glows.append(trail_glow)
 
-            self.add(pivot, rod1, rod2, bob1, bob2, trail)
+            self.add(pivot, rod1, rod2, bob1, bob2, trail_glow, trail)
 
         # Animate all pendulums
         def update_all_pendulums(alpha):
@@ -159,39 +191,46 @@ class DoublePendulumComparison(Scene):
                 rod1.put_start_and_end_on(origin, pos1)
                 rod2.put_start_and_end_on(pos1, pos2)
 
-        # Run animation
+        # Run animation with smooth rate
         self.play(
             UpdateFromAlphaFunc(VGroup(*pendulum_groups), lambda m, a: update_all_pendulums(a)),
             run_time=15,
-            rate_func=linear
+            rate_func=smooth
         )
 
-        # Add text
-        text = Text("Tiny initial differences lead to vastly different outcomes",
-                   font_size=24, color=YELLOW)
+        # Add explanatory text with smooth entrance
+        text = Text("Initial difference: 0.001 radians",
+                   font_size=26, color=YELLOW, weight=BOLD)
         text.to_edge(DOWN)
-        self.add(text)
+        self.play(FadeIn(text, shift=UP))
         self.wait(3)
 
 
 class DoublePendulumTrajectory(Scene):
     """
-    Show the trajectory of the second bob in 2D space.
+    Show the trajectory of the second bob in 2D space with glowing effect.
     """
 
     def construct(self):
-        title = Text("Chaotic Trajectory Pattern", font_size=44)
-        self.play(Write(title))
-        self.wait()
-        self.play(title.animate.to_edge(UP))
+        title = Text("Chaotic Trajectory Pattern", font_size=44, weight=BOLD)
+        subtitle = Text("Path of the second bob", font_size=28, color=BLUE)
+        subtitle.next_to(title, DOWN)
 
-        # Setup axes
+        self.play(FadeIn(title, shift=DOWN), FadeIn(subtitle, shift=DOWN))
+        self.wait()
+        self.play(FadeOut(subtitle), title.animate.scale(0.8).to_edge(UP))
+
+        # Setup axes with minimal styling
         axes = Axes(
             x_range=[-2.5, 2.5, 1],
             y_range=[-2.5, 2.5, 1],
             x_length=8,
             y_length=8,
-            axis_config={"include_numbers": False},
+            axis_config={
+                "include_numbers": False,
+                "stroke_color": GREY_D,
+                "stroke_width": 1,
+            },
         )
 
         self.play(Create(axes))
@@ -204,25 +243,37 @@ class DoublePendulumTrajectory(Scene):
         # Get Cartesian coordinates for second bob
         (x1, y1), (x2, y2) = pendulum.get_cartesian_positions(trajectory)
 
-        # Create path
-        points = [axes.c2p(x2[i], y2[i]) for i in range(0, len(x2), 5)]  # Subsample
+        # Create path - subsample for performance
+        points = [axes.c2p(x2[i], y2[i]) for i in range(0, len(x2), 5)]
 
-        # Draw path
-        path = VMobject(color=BLUE)
+        # Create smooth glowing path
+        path = VMobject()
         path.set_points_smoothly([points[0], points[0], points[0]])
+        path.set_stroke(width=3, color=BLUE_C)
 
-        self.add(path)
+        # Glow layers
+        path_glow = VMobject()
+        path_glow.set_points_smoothly([points[0], points[0], points[0]])
+        path_glow.set_stroke(width=6, color=BLUE, opacity=0.4)
+
+        path_glow_outer = VMobject()
+        path_glow_outer.set_points_smoothly([points[0], points[0], points[0]])
+        path_glow_outer.set_stroke(width=10, color=BLUE, opacity=0.2)
+
+        self.add(path_glow_outer, path_glow, path)
 
         # Animate path drawing
         def update_path(mob, alpha):
             idx = int(alpha * (len(points) - 1))
             if idx >= 2:
-                mob.set_points_smoothly(points[:idx])
+                path.set_points_smoothly(points[:idx])
+                path_glow.set_points_smoothly(points[:idx])
+                path_glow_outer.set_points_smoothly(points[:idx])
 
         self.play(
             UpdateFromAlphaFunc(path, update_path),
-            run_time=20,
-            rate_func=linear
+            run_time=22,
+            rate_func=smooth
         )
 
         self.wait(2)
@@ -230,39 +281,45 @@ class DoublePendulumTrajectory(Scene):
 
 class DoublePendulumIntro(Scene):
     """
-    Introduction to the double pendulum.
+    Introduction to the double pendulum with smooth animations.
     """
 
     def construct(self):
         # Title
-        title = Text("The Double Pendulum", font_size=56, weight=BOLD)
+        title = Text("The Double Pendulum", font_size=60, weight=BOLD)
         self.play(Write(title))
         self.wait()
 
         subtitle = Text("A Classic Example of Deterministic Chaos", font_size=32, color=BLUE)
         subtitle.next_to(title, DOWN)
-        self.play(FadeIn(subtitle))
+        self.play(FadeIn(subtitle, shift=DOWN))
         self.wait(2)
 
-        self.play(FadeOut(subtitle), title.animate.to_edge(UP))
+        # Move up smoothly
+        self.play(
+            title.animate.scale(0.7).to_edge(UP),
+            FadeOut(subtitle)
+        )
 
-        # Show equations
+        # Show equations with smooth entrance
         equations = VGroup(
-            Text("Equations of motion (Lagrangian):", font_size=28),
+            Text("Equations of motion (Lagrangian):", font_size=28, weight=BOLD),
             MathTex(
                 r"\frac{d^2\theta_1}{dt^2} = f_1(\theta_1, \theta_2, \omega_1, \omega_2)",
-                font_size=30
+                font_size=30,
+                color=BLUE
             ),
             MathTex(
                 r"\frac{d^2\theta_2}{dt^2} = f_2(\theta_1, \theta_2, \omega_1, \omega_2)",
-                font_size=30
+                font_size=30,
+                color=RED
             ),
         ).arrange(DOWN, buff=0.5)
 
-        self.play(Write(equations))
+        self.play(FadeIn(equations, shift=DOWN))
         self.wait(2)
 
-        # Key points
+        # Key points with smooth animations
         points = VGroup(
             Text("• Two pendulums attached end-to-end", font_size=26),
             Text("• Nonlinear coupled equations", font_size=26),
@@ -274,8 +331,10 @@ class DoublePendulumIntro(Scene):
 
         for point in points:
             self.play(FadeIn(point, shift=RIGHT), run_time=0.6)
+            self.wait(0.2)
 
-        self.wait(3)
+        self.wait(2)
+        self.play(FadeOut(points), FadeOut(equations), FadeOut(title))
 
 
 # Utility function
