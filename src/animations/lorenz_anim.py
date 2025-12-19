@@ -46,13 +46,8 @@ class LorenzAttractorScene(ThreeDScene):
             z_length=6,
         )
 
-        # Labels
-        x_label = axes.get_x_axis_label("x")
-        y_label = axes.get_y_axis_label("y")
-        z_label = axes.get_z_axis_label("z")
-
         self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
-        self.add(axes, x_label, y_label, z_label)
+        self.add(axes)
 
         # Generate Lorenz trajectory
         lorenz = create_classic_lorenz()

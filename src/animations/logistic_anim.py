@@ -42,8 +42,8 @@ class BifurcationDiagram(Scene):
         )
         axes.shift(DOWN * 0.5)
 
-        x_label = axes.get_x_axis_label("r", edge=DOWN, direction=DOWN)
-        y_label = axes.get_y_axis_label("x", edge=LEFT, direction=LEFT)
+        x_label = Text("r", font_size=32).next_to(axes.x_axis.get_end(), RIGHT)
+        y_label = Text("x", font_size=32).next_to(axes.y_axis.get_end(), UP)
 
         self.play(Create(axes), Write(x_label), Write(y_label))
         self.wait()
@@ -141,8 +141,8 @@ class CobwebPlot(Scene):
         )
         axes.shift(DOWN * 0.3)
 
-        x_label = axes.get_x_axis_label("x_n", edge=DOWN)
-        y_label = axes.get_y_axis_label("x_{n+1}", edge=LEFT)
+        x_label = Text("x_n", font_size=28).next_to(axes.x_axis.get_end(), RIGHT)
+        y_label = Text("x_n+1", font_size=28).next_to(axes.y_axis.get_end(), UP)
 
         self.play(Create(axes), Write(x_label), Write(y_label))
 
@@ -228,8 +228,8 @@ class PeriodDoublingScene(Scene):
             )
             axes.shift(DOWN * 0.5)
 
-            x_label = axes.get_x_axis_label("n", edge=DOWN)
-            y_label = axes.get_y_axis_label("x_n", edge=LEFT)
+            x_label = Text("n", font_size=28).next_to(axes.x_axis.get_end(), RIGHT)
+            y_label = Text("x_n", font_size=28).next_to(axes.y_axis.get_end(), UP)
 
             self.play(Create(axes), Write(x_label), Write(y_label), run_time=0.5)
 
