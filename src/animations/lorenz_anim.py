@@ -22,63 +22,85 @@ from src.utils.colors import get_trajectory_colors, BLUE, GREEN, YELLOW, RED, PU
 class LorenzAttractorScene(ThreeDScene):
     """
     Main Lorenz attractor visualization with rotating 3D view.
+    Beautiful glowing butterfly pattern with gradient colors.
     """
 
     def construct(self):
         # Title
-        title = Text("The Lorenz Attractor", font_size=48)
+        title = Text("The Lorenz Attractor", font_size=48, weight=BOLD)
         title.to_edge(UP)
-        subtitle = Text("The Butterfly Effect", font_size=32, color=BLUE)
-        subtitle.next_to(title, DOWN)
 
-        self.add_fixed_in_frame_mobjects(title, subtitle)
-        self.play(Write(title), Write(subtitle))
+        self.add_fixed_in_frame_mobjects(title)
+        self.play(FadeIn(title, shift=DOWN))
         self.wait()
-        self.play(FadeOut(title), FadeOut(subtitle))
+        self.play(FadeOut(title))
 
-        # Setup 3D axes
+        # Setup minimal 3D axes (cleaner look)
         axes = ThreeDAxes(
-            x_range=[-25, 25, 5],
-            y_range=[-35, 35, 5],
-            z_range=[0, 50, 10],
+            x_range=[-25, 25, 25],
+            y_range=[-35, 35, 35],
+            z_range=[0, 50, 25],
             x_length=8,
             y_length=8,
             z_length=6,
+            axis_config={
+                "stroke_color": GREY_D,
+                "stroke_width": 1,
+                "include_tip": False,
+            }
         )
 
-        self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+        self.set_camera_orientation(phi=70 * DEGREES, theta=-45 * DEGREES, distance=10)
         self.add(axes)
 
-        # Generate Lorenz trajectory
+        # Generate Lorenz trajectory with longer time span for full butterfly
         lorenz = create_classic_lorenz()
         initial_state = np.array([1.0, 1.0, 1.0])
-        trajectory = lorenz.solve(initial_state, t_span=(0, 50), dt=0.005)
+        trajectory = lorenz.solve(initial_state, t_span=(0, 100), dt=0.01)
 
-        # Subsample for performance
-        trajectory = trajectory[::2]
+        # Subsample for smooth performance
+        trajectory = trajectory[::3]
 
-        # Create parametric curve
-        def lorenz_curve(t):
-            idx = int(t * (len(trajectory) - 1))
-            idx = np.clip(idx, 0, len(trajectory) - 1)
-            point = trajectory[idx]
-            return axes.c2p(point[0], point[1], point[2])
+        # Convert trajectory to 3D points
+        points = [axes.c2p(p[0], p[1], p[2]) for p in trajectory]
 
-        # Draw trajectory
-        curve = ParametricFunction(
-            lorenz_curve,
-            t_range=[0, 1],
-            color=BLUE,
-            stroke_width=2,
+        # Create smooth curve with glowing effect
+        # Main curve with gradient
+        curve = VMobject()
+        curve.set_points_smoothly([points[0]] + points + [points[-1]])
+
+        # Apply gradient coloring from blue to cyan to emphasize butterfly wings
+        curve.set_stroke(width=3)
+        curve.set_color_by_gradient(BLUE_E, BLUE_C, TEAL_C, BLUE_C, BLUE_E)
+
+        # Add glow effect by creating background copies
+        glow_curve_1 = curve.copy()
+        glow_curve_1.set_stroke(width=8, opacity=0.3)
+        glow_curve_1.set_color_by_gradient(BLUE, TEAL, BLUE)
+
+        glow_curve_2 = curve.copy()
+        glow_curve_2.set_stroke(width=16, opacity=0.15)
+        glow_curve_2.set_color_by_gradient(BLUE, TEAL, BLUE)
+
+        # Animate drawing with glow
+        self.play(
+            Create(glow_curve_2),
+            Create(glow_curve_1),
+            Create(curve),
+            run_time=15,
+            rate_func=linear
         )
-
-        # Animate drawing
-        self.play(Create(curve), run_time=10, rate_func=linear)
         self.wait()
 
-        # Rotate camera around the attractor
-        self.begin_ambient_camera_rotation(rate=0.15)
-        self.wait(10)
+        # Smooth camera rotation to showcase the butterfly
+        self.move_camera(phi=60 * DEGREES, theta=-90 * DEGREES, run_time=4)
+        self.wait()
+        self.move_camera(phi=80 * DEGREES, theta=-30 * DEGREES, run_time=4)
+        self.wait()
+
+        # Final slow rotation
+        self.begin_ambient_camera_rotation(rate=0.1)
+        self.wait(8)
         self.stop_ambient_camera_rotation()
 
         self.wait(2)
@@ -87,92 +109,94 @@ class LorenzAttractorScene(ThreeDScene):
 class ButterflyEffectScene(ThreeDScene):
     """
     Demonstrate sensitive dependence on initial conditions.
-    Two trajectories with tiny initial difference diverge exponentially.
+    Two glowing trajectories with tiny initial difference diverge exponentially.
     """
 
     def construct(self):
         # Title
-        title = Text("The Butterfly Effect", font_size=48)
-        subtitle = Text("Sensitive Dependence on Initial Conditions", font_size=28)
+        title = Text("The Butterfly Effect", font_size=48, weight=BOLD)
+        subtitle = Text("Tiny differences, enormous consequences", font_size=32, color=YELLOW)
         subtitle.next_to(title, DOWN)
 
         self.add_fixed_in_frame_mobjects(title, subtitle)
-        self.play(Write(title), Write(subtitle))
+        self.play(FadeIn(title, shift=DOWN), FadeIn(subtitle, shift=DOWN))
         self.wait(2)
         self.play(FadeOut(title), FadeOut(subtitle))
 
-        # Setup axes
+        # Setup minimal axes
         axes = ThreeDAxes(
-            x_range=[-25, 25, 10],
-            y_range=[-35, 35, 10],
-            z_range=[0, 50, 10],
+            x_range=[-25, 25, 25],
+            y_range=[-35, 35, 35],
+            z_range=[0, 50, 25],
             x_length=8,
             y_length=8,
             z_length=6,
+            axis_config={
+                "stroke_color": GREY_D,
+                "stroke_width": 1,
+                "include_tip": False,
+            }
         )
 
-        self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+        self.set_camera_orientation(phi=70 * DEGREES, theta=-45 * DEGREES, distance=10)
         self.add(axes)
 
         # Generate two trajectories with tiny difference
         lorenz = create_classic_lorenz()
         initial1 = np.array([1.0, 1.0, 1.0])
-        initial2 = np.array([1.0, 1.0, 1.00001])  # Tiny difference
+        initial2 = np.array([1.0, 1.0, 1.00001])  # 0.00001 difference
 
-        traj1 = lorenz.solve(initial1, t_span=(0, 40), dt=0.005)
-        traj2 = lorenz.solve(initial2, t_span=(0, 40), dt=0.005)
+        traj1 = lorenz.solve(initial1, t_span=(0, 40), dt=0.01)
+        traj2 = lorenz.solve(initial2, t_span=(0, 40), dt=0.01)
 
         # Subsample
-        traj1 = traj1[::2]
-        traj2 = traj2[::2]
+        traj1 = traj1[::3]
+        traj2 = traj2[::3]
 
-        # Create curves
-        def curve1_func(t):
-            idx = int(t * (len(traj1) - 1))
-            idx = np.clip(idx, 0, len(traj1) - 1)
-            return axes.c2p(traj1[idx, 0], traj1[idx, 1], traj1[idx, 2])
+        # Convert to points
+        points1 = [axes.c2p(p[0], p[1], p[2]) for p in traj1]
+        points2 = [axes.c2p(p[0], p[1], p[2]) for p in traj2]
 
-        def curve2_func(t):
-            idx = int(t * (len(traj2) - 1))
-            idx = np.clip(idx, 0, len(traj2) - 1)
-            return axes.c2p(traj2[idx, 0], traj2[idx, 1], traj2[idx, 2])
+        # Create smooth curves with glow
+        curve1 = VMobject()
+        curve1.set_points_smoothly([points1[0]] + points1 + [points1[-1]])
+        curve1.set_stroke(width=3, color=RED_C)
 
-        curve1 = ParametricFunction(
-            curve1_func,
-            t_range=[0, 1],
-            color=RED,
-            stroke_width=3,
-        )
+        glow1 = curve1.copy().set_stroke(width=10, opacity=0.4, color=RED)
+        glow1_outer = curve1.copy().set_stroke(width=18, opacity=0.2, color=RED)
 
-        curve2 = ParametricFunction(
-            curve2_func,
-            t_range=[0, 1],
-            color=BLUE,
-            stroke_width=3,
-        )
+        curve2 = VMobject()
+        curve2.set_points_smoothly([points2[0]] + points2 + [points2[-1]])
+        curve2.set_stroke(width=3, color=BLUE_C)
 
-        # Animate both trajectories
+        glow2 = curve2.copy().set_stroke(width=10, opacity=0.4, color=BLUE)
+        glow2_outer = curve2.copy().set_stroke(width=18, opacity=0.2, color=BLUE)
+
+        # Animate both trajectories simultaneously
         self.play(
+            Create(glow1_outer),
+            Create(glow1),
             Create(curve1),
+            Create(glow2_outer),
+            Create(glow2),
             Create(curve2),
-            run_time=15,
+            run_time=18,
             rate_func=linear
         )
-
         self.wait()
 
-        # Rotate camera
-        self.begin_ambient_camera_rotation(rate=0.2)
-        self.wait(8)
-        self.stop_ambient_camera_rotation()
+        # Smooth camera movements
+        self.move_camera(phi=60 * DEGREES, theta=-90 * DEGREES, run_time=4)
+        self.wait(2)
 
         # Add text explaining divergence
         explanation = Text(
-            "Initial difference: 0.00001\nDivergence is exponential!",
-            font_size=24,
-            color=YELLOW
+            "Initial difference: 0.00001",
+            font_size=28,
+            color=YELLOW,
+            weight=BOLD
         )
-        explanation.to_edge(DOWN)
+        explanation.to_edge(DOWN).shift(UP * 0.5)
         self.add_fixed_in_frame_mobjects(explanation)
         self.play(FadeIn(explanation))
         self.wait(3)
@@ -180,61 +204,75 @@ class ButterflyEffectScene(ThreeDScene):
 
 class LorenzPhaseSpaceScene(ThreeDScene):
     """
-    Show multiple trajectories converging to the attractor.
+    Show multiple glowing trajectories converging to the strange attractor.
+    Beautiful multi-colored butterfly pattern.
     """
 
     def construct(self):
-        title = Text("Strange Attractor", font_size=48)
-        self.add_fixed_in_frame_mobjects(title)
-        self.play(Write(title))
-        self.wait()
-        self.play(FadeOut(title))
+        title = Text("Strange Attractor", font_size=48, weight=BOLD)
+        subtitle = Text("All paths lead to the butterfly", font_size=32, color=TEAL)
+        subtitle.next_to(title, DOWN)
 
-        # Setup axes
+        self.add_fixed_in_frame_mobjects(title, subtitle)
+        self.play(FadeIn(title, shift=DOWN), FadeIn(subtitle, shift=DOWN))
+        self.wait()
+        self.play(FadeOut(title), FadeOut(subtitle))
+
+        # Setup minimal axes
         axes = ThreeDAxes(
-            x_range=[-25, 25, 10],
-            y_range=[-35, 35, 10],
-            z_range=[0, 50, 10],
+            x_range=[-25, 25, 25],
+            y_range=[-35, 35, 35],
+            z_range=[0, 50, 25],
             x_length=8,
             y_length=8,
             z_length=6,
+            axis_config={
+                "stroke_color": GREY_D,
+                "stroke_width": 1,
+                "include_tip": False,
+            }
         )
 
-        self.set_camera_orientation(phi=75 * DEGREES, theta=45 * DEGREES)
+        self.set_camera_orientation(phi=70 * DEGREES, theta=-45 * DEGREES, distance=10)
         self.add(axes)
 
         # Generate multiple trajectories from different initial conditions
         lorenz = create_classic_lorenz()
-        initial_states = lorenz.get_multiple_initial_states(num_states=5, spread=5.0)
-        colors = [RED, BLUE, GREEN, YELLOW, PURPLE]
+        initial_states = lorenz.get_multiple_initial_states(num_states=4, spread=8.0)
+        colors = [RED_C, BLUE_C, GREEN_C, PURPLE_C]
 
-        curves = []
+        all_curves = []
         for initial, color in zip(initial_states, colors):
-            traj = lorenz.solve(initial, t_span=(0, 30), dt=0.005)
+            traj = lorenz.solve(initial, t_span=(0, 50), dt=0.01)
             traj = traj[::3]  # Subsample
 
-            def make_curve_func(trajectory):
-                def curve_func(t):
-                    idx = int(t * (len(trajectory) - 1))
-                    idx = np.clip(idx, 0, len(trajectory) - 1)
-                    return axes.c2p(trajectory[idx, 0], trajectory[idx, 1], trajectory[idx, 2])
-                return curve_func
+            # Convert to points
+            points = [axes.c2p(p[0], p[1], p[2]) for p in traj]
 
-            curve = ParametricFunction(
-                make_curve_func(traj),
-                t_range=[0, 1],
-                color=color,
-                stroke_width=2,
-            )
-            curves.append(curve)
+            # Create smooth curve with glow
+            curve = VMobject()
+            curve.set_points_smoothly([points[0]] + points + [points[-1]])
+            curve.set_stroke(width=2.5, color=color)
 
-        # Draw all curves simultaneously
-        self.play(*[Create(curve) for curve in curves], run_time=12, rate_func=linear)
+            # Add glow layers
+            glow = curve.copy().set_stroke(width=8, opacity=0.3, color=color)
+            glow_outer = curve.copy().set_stroke(width=14, opacity=0.15, color=color)
+
+            all_curves.extend([glow_outer, glow, curve])
+
+        # Draw all curves simultaneously with beautiful effect
+        self.play(*[Create(curve) for curve in all_curves], run_time=16, rate_func=linear)
         self.wait()
 
-        # Rotate
-        self.begin_ambient_camera_rotation(rate=0.15)
-        self.wait(10)
+        # Smooth camera movements
+        self.move_camera(phi=60 * DEGREES, theta=-90 * DEGREES, run_time=4)
+        self.wait(2)
+        self.move_camera(phi=80 * DEGREES, theta=0 * DEGREES, run_time=4)
+        self.wait()
+
+        # Final rotation
+        self.begin_ambient_camera_rotation(rate=0.12)
+        self.wait(8)
         self.stop_ambient_camera_rotation()
         self.wait(2)
 
